@@ -1,4 +1,5 @@
 [
     { "keys": ["ctrl+alt+s"], "command": "flash_card" },
-    { "keys": ["ctrl+alt+space"], "command": "flash_card", "args": { "get_selection": true } }
+    { "keys": ["ctrl+alt+space"], "command": "flash_card", "args": { "operation": "correct_flash_card" } },
+    { "keys": ["ctrl+alt+w"], "command": "flash_card", "args": { "operation": "swap_map" } }
 ]

@@ -31,6 +31,10 @@ Developed and tested under Sublime 3 and Windows 7 x64
 
 ##Roadmap
 
+* [DONE] If invalid tell invalid line
+
+* [DONE] Swap questions and replies 
+
 * Limitation of time per flashcard
 
 * Get the minimum distance edit ocorrence after 5 wrongs
@@ -48,3 +52,5 @@ Developed and tested under Sublime 3 and Windows 7 x64
 * You may get the response correct and the second flash card be the same.
 
 * If you don't make a valid selection you will see the message invalid selection on the status bar and the flashcards plugin will not load the data.
+
+* To swap reply with question hit ctrl+alt+w. When a swap is done the current flash card is replaced by a new one.

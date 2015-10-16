@@ -9,19 +9,28 @@ class FlashCardCommand(sublime_plugin.TextCommand):
 	sels = []
 	line_count = 0
 
-	def run(self, edit, get_selection=False):
+	def run(self, edit, operation=None):
 		
-		if get_selection:
+
+		if operation == "correct_flash_card":
 			body = getBodyFlashCard(self.view)
 			line = Line(body, FLASH_CARD_SEP)
 			result = newFlashCard(line.question, line.reply)
 			if result: initQuestion(edit)
+
+		elif operation == "swap_map":
+			for part in FlashCardCommand.sels:
+				part.swap()
+			initQuestion(edit)
+			sublime.status_message("swap done")
+
 		else:
-			if validSelection(self.view):
+			[valid, invalid_line] = validSelection(self.view)
+			if valid:
 				new_view = setup(self.view, edit)
 				initQuestion(edit, new_view)
 			else:
-				sublime.status_message("invalid selection")
+				sublime.status_message("invalid selection: " + invalid_line)
 
 
 
@@ -47,11 +56,14 @@ def getLine():
 def validSelection(view):
 	body = getSelection(view)
 	valid = False
+	invalid = None
 	parts = body.split(LIST_FLASH_CARDS_SEP)
 	for part in parts:
 		valid = part.count(LIST_FLASH_CARD_SEP) == 1
-		if not(valid): break
-	return valid
+		if not(valid): 
+			invalid = part 
+			break
+	return [valid, part]
 
 def setup(view, edit):
 	window = sublime.active_window()
@@ -91,4 +103,12 @@ class Line:
 	def __init__(self, line, separator = LIST_FLASH_CARD_SEP):
 		if not line: line = separator
 		[self.question, self.reply] = line.split(separator)
-		self.flash_card = self.question + FLASH_CARD_SEP
+		self.buildQuestion()
+	def swap(self):
+		reply = self.reply
+		self.reply = self.question
+		self.question = reply
+		self.buildQuestion()
+	def buildQuestion(self):
+		self.flash_card = self.question + FLASH_CARD_SEP 
+	

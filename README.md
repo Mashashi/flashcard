@@ -2,6 +2,10 @@
 
 A plugin for sublime that helps to memoraize like you would with flash cards.
 
+## Compatibility
+
+Developed and tested under Sublime 3 and Windows 7 x64
+
 ## Usage
 
 1. Type a pair of words separated by a tab in each line of a file
@@ -32,6 +36,8 @@ A plugin for sublime that helps to memoraize like you would with flash cards.
 * Get the minimum distance edit ocorrence after 5 wrongs
 
 * Show wrongs more often
+
+* Display statistics like histogram of corrects and histogram of wrongs
 
 ##Observations
 

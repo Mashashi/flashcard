@@ -23,6 +23,8 @@ class FlashCardCommand(sublime_plugin.TextCommand):
 			else:
 				sublime.status_message("invalid selection")
 
+
+
 def getBody(view):
 	body = view.substr(sublime.Region(0, view.size()))
 	return body
@@ -35,10 +37,38 @@ def getBodyFlashCard(view):
 def getSelection(view):
 	return view.substr(view.sel()[0])
 
+def getLine():
+	pick_idx = math.floor(random.random()*FlashCardCommand.line_count)
+	picked_line = FlashCardCommand.sels[pick_idx]
+	return picked_line
+
+
+
+def validSelection(view):
+	body = getSelection(view)
+	valid = False
+	parts = body.split(LIST_FLASH_CARDS_SEP)
+	for part in parts:
+		valid = part.count(LIST_FLASH_CARD_SEP) == 1
+		if not(valid): break
+	return valid
+
+def setup(view, edit):
+	window = sublime.active_window()
+	window.new_file()
+	new_view = window.active_view()
+	sels = getSelection(view)
+	FlashCardCommand.sels = list(map(Line, sels.split(LIST_FLASH_CARDS_SEP)))
+	FlashCardCommand.line_count = len(FlashCardCommand.sels)
+	return new_view
+
 def initQuestion(edit, view = None):
 	if view == None: view = sublime.active_window().active_view()
 	view.erase(edit, sublime.Region(0, view.size()))
 	view.insert(edit, 0, getLine().flash_card)
+
+
+
 
 def newFlashCard(question, reply):
 	response = None
@@ -55,28 +85,7 @@ def newFlashCard(question, reply):
 
 	return response
 
-def setup(view, edit):
-	window = sublime.active_window()
-	window.new_file()
-	new_view = window.active_view()
-	sels = getSelection(view)
-	FlashCardCommand.sels = list(map(Line, sels.split(LIST_FLASH_CARDS_SEP)))
-	FlashCardCommand.line_count = len(FlashCardCommand.sels)
-	return new_view
 
-def getLine():
-	pick_idx = math.floor(random.random()*FlashCardCommand.line_count)
-	picked_line = FlashCardCommand.sels[pick_idx]
-	return picked_line
-
-def validSelection(view):
-	body = getSelection(view)
-	valid = False
-	parts = body.split(LIST_FLASH_CARDS_SEP)
-	for part in parts:
-		valid = part.count(LIST_FLASH_CARD_SEP) == 1
-		if not(valid): break
-	return valid
 
 class Line:
 	def __init__(self, line, separator = LIST_FLASH_CARD_SEP):

@@ -43,6 +43,8 @@ Developed and tested under Sublime 3 and Windows 7 x64
 
 * Display statistics like histogram of corrects and histogram of wrongs
 
+* Possibility to read several flash card sets and alternate between them
+
 ##Observations
 
 * You don't have several instances of the flash cards you get only one.

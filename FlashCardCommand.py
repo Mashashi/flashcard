@@ -23,9 +23,11 @@ class FlashCardCommand(sublime_plugin.TextCommand):
 			f = open(txt, 'r')
 			f_contents = f.read()
 			f.close()
-			sets = f_contents.split(FILE_SET_SEPARATOR)
-			for s in sets: newSetRaw(s)
-			sublime.status_message("file loaded: " + txt)
+			invalidCount = 0
+			sets = f_contents.split(FILE_SET_SEPARATOR)[1:]
+			for s in sets: 
+				if not(newSetRaw(s)): invalidCount = invalidCount + 1
+			sublime.status_message("file loaded: " + txt + " - invalid flash card sets found: " + str(invalidCount))
 			
 
 		if operation == "correct_flash_card":
@@ -41,14 +43,15 @@ class FlashCardCommand(sublime_plugin.TextCommand):
 			sublime.status_message("swap done")
 		else:
 			
-			[valid, invalid_line] = validSelection(self.view)
+			[valid, invalid_line, sels] = validSelection(self.view)
+			print("-->"+str(valid))
 			if valid:
 				FlashCardCommand.selected = None
 				sublime.active_window().show_input_panel("new name", "", doneNewSet, lambda: None, lambda: None)
-				new_view = setup(self.view, edit)
+				new_view = setup(sels, edit)
 				initQuestion(edit, new_view)
 			elif invalid_line == "file":
-				sublime.active_window().show_input_panel("file_path", "", doneFilePicker, lambda: None, lambda: None)
+				sublime.active_window().show_input_panel("file path", "", doneFilePicker, lambda: None, lambda: None)
 			elif invalid_line != "":
 				sublime.status_message("invalid selection: " + invalid_line)
 			else:
@@ -78,29 +81,67 @@ def getLine():
 
 
 def validSelection(view):
-	body = getSelection(view)
-	valid = False
-	invalid = None
-	parts = body.split(LIST_FLASH_CARDS_SEP)
+	return validText(getSelection(view))
+
+'''
+inputs:
+	txt - the text to validate
+	hasName - if the first line is the name of the flash card set
+returns
+	valid - a boolean indication if the txt is valid
+	invalid - the invalid line
+	transformed - the txt without blank or empty lines
+'''
+def validText(txt,hasName=False):
+	valid = False # empty line is invalid valid file yields 1
+	invalid = txt
+	parts = txt.split(LIST_FLASH_CARDS_SEP)
+	#if len(parts)>1: parts.pop(1)
+	del parts[-1]
+	transformed = ""
+	if hasName: 
+		transformed += LIST_FLASH_CARDS_SEP + parts[0]
+		parts = parts[1:]
 	for part in parts:
-		valid = part.count(LIST_FLASH_CARD_SEP) == 1
-		if not(valid): 
+		[valid, parsed] = validateLine(part)
+		
+		if valid:
+			transformed += parsed
+		elif not(valid):
 			invalid = part 
 			break
-	return [valid, part]
+	return [valid, invalid, transformed[1:]]
 
-def setup(view, edit):
+'''
+description:
+	checks if the line is empty or contains only blank spaces if so returns a empty string otherwise checks if it has a tab and returns the line input prefixed with the LIST_FLASH_CARDS_SEP char
+
+returns: 
+	valid - a boolean indication if the line is valid
+	parsed - line input prefixed with the LIST_FLASH_CARDS_SEP char of if blank string returns empty string
+'''
+def validateLine(line):
+	valid = False
+	parsed = ""
+	if line.strip() != "":
+		valid = line.count(LIST_FLASH_CARD_SEP) == 1
+		parsed = LIST_FLASH_CARDS_SEP + line
+	return [valid, parsed]
+
+def setup(sels, edit):
 	window = sublime.active_window()
 	window.new_file()
 	new_view = window.active_view()
-	sels = getSelection(view)
 	newSet(FlashCardCommand.selected, sels)
 	return new_view
 
 def newSetRaw(raw_content):
-	lines = raw_content.split(LIST_FLASH_CARDS_SEP)
-	content = LIST_FLASH_CARDS_SEP.join(l for l in lines[1:])
-	newSet(lines[0], content)
+	[valid, part, raw_content] = validText(raw_content, True)
+	if valid:
+		lines = raw_content.split(LIST_FLASH_CARDS_SEP)
+		content = LIST_FLASH_CARDS_SEP.join(l for l in lines[1:])
+		newSet(lines[0], content)
+	return valid
 
 def newSet(name, content):
 	sels = list(map(Line, content.split(LIST_FLASH_CARDS_SEP)))

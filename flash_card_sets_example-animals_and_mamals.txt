@@ -1,0 +1,6 @@
+#animals
+bear	mamal
+baracuda	fish
+#transports
+car	fast
+ship	slow
